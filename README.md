@@ -17,6 +17,6 @@ The version returned should start with 'Java 1.7.' If it doesn't, you can try up
 
 ### Demo
 
-Use the file, 'callGetNldasForcing.m' to test out how to download the locations found in the input file, 'inFile.txt.'
+Use the file, 'callGetNldasForcing.m' to test out the downloading of two days of hourly NLDAS data. Locations to be downloaded are in the input file, 'inFile.txt.'
 
 This file will create an output directory, 'forcingFromNasa,' with text files holding each location's NLDAS forcing data.
