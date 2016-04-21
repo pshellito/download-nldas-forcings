@@ -12,7 +12,7 @@ close all
 inFile = './inFile.txt';
 % Date range requested
 qStart = [2016,2,14];
-qEnd = [2016,2,24];
+qEnd = [2016,2,15];
 
 % -------------------------------------------------------------------------
 % Read the input data from the text file
