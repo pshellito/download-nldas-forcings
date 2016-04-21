@@ -1,5 +1,5 @@
 # download-nldas-forcings
-These scripts will help users download [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) data forcings to their local computer using a Matlab script
+This function will help users download [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) data forcings to their local computer using a Matlab script
 
 ## Requirements
 You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox).
