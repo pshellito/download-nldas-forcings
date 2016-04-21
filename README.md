@@ -1,5 +1,5 @@
 # download-nldas-forcings
-This function will help users download [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) data forcings to their local computer using a Matlab script
+The Matlab function, 'getNldasForcing.m' will help users download [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) data forcings to their local computer.
 
 ### Requirements
 
