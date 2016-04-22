@@ -1,17 +1,17 @@
 # download-nldas-forcings
 
 ## Overview
-The Matlab function, 'getNldasForcing.m' downloads [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) primary (A) forcings at any number of point locations. If a requested location is not in the NLDAS domain, the script will issue a warning and download the closest NLDAS pixel to the requested location.
+The Matlab function, 'getNldasForcing.m' downloads [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) primary forcings (A) at any number of point locations and saves them as individual text files that contain the corresponding meteorological timeseries. If a requested location is not in the NLDAS domain, the script will issue a warning and download the closest NLDAS pixel to the requested location.
 
 ## Requirements
 
-Matlab R2008a+. You can verify the version of Matlab by typing:
+1. You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox). Follow the instructions on that page to install.
+
+2. Matlab R2008a+. You can verify the version of Matlab by typing:
 
       version
 
-You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox). Follow the instructions on that page to install.
-
-You must have java version 7 or higher. You can verify the version of Java used by Matlab by typing:
+3. Java version 7 or higher. You can verify the version of Java used by Matlab by typing:
 
       version('-java')
 
