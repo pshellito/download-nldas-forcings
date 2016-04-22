@@ -5,13 +5,13 @@ The Matlab function, 'getNldasForcing.m' downloads [NLDAS](http://ldas.gsfc.nasa
 
 ## Requirements
 
-1. You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox). Follow the instructions on that page to install.
+You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox). Follow the instructions on that page to install.
 
-2. Matlab R2008a+. You can verify the version of Matlab by typing:
+Matlab R2008a+. You can verify the version of Matlab by typing:
 
       version
 
-3. Java version 7 or higher. You can verify the version of Java used by Matlab by typing:
+Java version 7 or higher. You can verify the version of Java used by Matlab by typing:
 
       version('-java')
 
