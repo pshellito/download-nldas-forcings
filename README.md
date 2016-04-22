@@ -21,6 +21,7 @@ The script, 'callGetNldasForcing.m' will
 * Read the site name, latitude, and longitude of two arbitrary locations found in the input file, 'inFile.txt.'
 * Define the range of dates over which to download. This is initially set to only 2 days for testing, which should take about a minute.
 * Place output in a directory it creates called 'forcingFromNasa.' Each location's forcing data will be in a tab-delimited .txt file named after the site name. Details about the site's location are provided in a header in each file.
+
 The above options can be changed in the 'callGetNldasForcing.m' script.
 
 ### Contact
