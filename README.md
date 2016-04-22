@@ -9,7 +9,7 @@ Matlab R2008a+. You can verify the version of Matlab by typing:
 
 You must first install [nctoolbox](https://github.com/nctoolbox/nctoolbox). Follow the instructions on that page to install.
 
-You must have java version 7 or higher. You can verify the version of Javay used by Matlab by typing:
+You must have java version 7 or higher. You can verify the version of Java used by Matlab by typing:
 
       version('-java')
 
@@ -19,4 +19,4 @@ The version returned should start with 'Java 1.7.' If it doesn't, you can try up
 
 Use the file, 'callGetNldasForcing.m' to test out the downloading of two days of hourly NLDAS data. Locations to be downloaded are in the input file, 'inFile.txt.'
 
-This file will create an output directory, 'forcingFromNasa,' with text files holding each location's NLDAS forcing data.
+The 'callGetNldasForcing.m' script will create an output directory, 'forcingFromNasa,' with text files holding each location's NLDAS forcing data.
