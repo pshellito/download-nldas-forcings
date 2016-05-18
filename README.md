@@ -26,5 +26,7 @@ The script, 'callGetNldasForcing.m' will
 
 The above options can be changed in the 'callGetNldasForcing.m' script.
 
+Using a CU internet connection and a 2015 Macbook Pro, it takes about 4 hours to download one year of forcing data.
+
 ## Contact
 If you have any questions or edits, please [contact me](mailto:peter.shellito@colorado.edu) or create a new pull request.
