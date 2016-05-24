@@ -7,7 +7,10 @@ function [ outDir ] = getNldasForcing(qNames, qLat, qLon, qStart, qEnd, outDir)
 % qLat: latitude corresponding to each site
 % qLon: longitude corresponding to each site
 % qStart: a vector [yyyy, mm, dd] specifying the day to start downloading.
-%       Start date must be [1979, 1, 2] or later.
+%       Start date must be [1979, 1, 2] or later. If set to 'apnd,'
+%       script will look for an existing file with the
+%       same site name and start at the last date in that file and
+%       append new data to it.
 % qEnd: a vector [yyyy, mm, dd] specifying the day to stop downloading. End
 %       date must be 4 days before today or earlier. Neither qStart nor 
 %       qEnd support a starting hour and minute.
@@ -69,21 +72,60 @@ if nargin<6
 end
 
 % -------------------------------------------------------------------------
-% Make sure data are of the proper type and dimensions
+% Some initial checks
+
+% Names must be a cell array of strings
 if ~iscellstr(qNames)
     error('Input names must be a cell array of strings.')
 end
-dnStart = floor(datenum(qStart));
-dnEnd = floor(datenum(qEnd));
-if dnStart < datenum(1979,1,2)
-    dnStart = datenum(1979,1,2);
+
+% If a start date is provided
+if isfloat(qStart)
+    % Do not append files
+    apnd = false;
+    % The start datenum is provided in qStart
+    dnStart = floor(datenum(qStart));
+    if dnStart < datenum(1979,1,2)
+        dnStart = datenum(1979,1,2);
+    end
+% If the string 'apnd' is provided, use the date of the last record
+elseif strcmp(qStart,'apnd')
+    % Append these files, starting with the datenum after the last line,
+    % which should be at hour 2300.
+    apnd = true;
+    % Open the last file
+    fid = fopen([outDir '/' qNames{end} '.txt'],'r');
+    if fid == -1
+        error(['There is no file by name ' outDir '/' qNames{end} '.txt to which to append data'])
+    end
+    % Count the lines in that file
+    nLines = 0;
+    tline = fgetl(fid);
+    while ischar(tline)
+        tline = fgetl(fid);
+        nLines = nLines+1;
+    end
+    % Read the last line to get the last date
+    frewind(fid)
+    lastLine = textscan(fid, '%f', 'headerlines', nLines-1);
+    % Assign the last date in the file as the date to start with
+    qStart = [lastLine{1}(1:5)' 0];
+    dnStart = ceil(datenum(qStart));
+    
+else
+    error('qStart must be either a start date or the string ''apnd'' if you wish to append to an existing record')
 end
+
+% Start date is not after end date
+dnEnd = floor(datenum(qEnd));
 if dnEnd > floor(datenum(now))-4
     dnEnd = floor(datenum(now))-4;
 end
 if dnEnd < dnStart
     error('Start date cannot be after end date')
 end
+
+
 % -------------------------------------------------------------------------
 % Set up some variables
 % Number of sites requested
@@ -211,15 +253,23 @@ for ss = 1:nSites
     end
     % The name for this output file
     outFile = [outDir '/' qNames{ss} '.txt'];
-    % Open the output file for the first time
-    fid(ss) = fopen(outFile,'w');
-    % Print header lines to the file
-    fprintf(fid(ss),['%% Site: ' qNames{ss} '\n']);
-    fprintf(fid(ss),['%% Site lat/lon: ' num2str([qLat(ss) qLon(ss)]) '\n']);
-    fprintf(fid(ss),['%% Closest NLDAS pixel (1/8 degree) center: ' num2str([nearestLat nearestLon]) '\n']);
-    fprintf(fid(ss),['%% File created on ' date '.\n']);
-    fprintf(fid(ss),['%% Date                       ' namesStrAll '\n']);
-    fprintf(fid(ss),['%% year month day hour minute ' unitsStrAll '\n']);
+
+    % If we are not appending data, write a header
+    if ~apnd
+        % Open the output file for the first time
+        fid(ss) = fopen(outFile,'w');
+        % Print header lines to the file
+        fprintf(fid(ss),['%% Site: ' qNames{ss} '\n']);
+        fprintf(fid(ss),['%% Site lat/lon: ' num2str([qLat(ss) qLon(ss)]) '\n']);
+        fprintf(fid(ss),['%% Closest NLDAS pixel (1/8 degree) center: ' num2str([nearestLat nearestLon]) '\n']);
+        fprintf(fid(ss),['%% File created on ' date '.\n']);
+        fprintf(fid(ss),['%% Date                       ' namesStrAll '\n']);
+        fprintf(fid(ss),['%% year month day hour minute ' unitsStrAll '\n']);
+    else
+        % If we are appending data, open the output file with append
+        % permission only.
+        fid(ss) = fopen(outFile,'a');
+    end
 end % Loop through each site
 
 % -------------------------------------------------------------------------

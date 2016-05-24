@@ -9,10 +9,11 @@ close all
 % -------------------------------------------------------------------------
 % In this example, there are two sites with latitude and longitude in the
 % following input file:
-inFile = './inFile.txt';
+inFile = './inFileForEric.txt';
 % Date range requested
-qStart = [2016,2,14];
-qEnd = [2016,2,15];
+qStart = [1980,1,1];
+% qStart = 'apnd';
+qEnd = [1983,9,30];
 
 % -------------------------------------------------------------------------
 % Read the input data from the text file
