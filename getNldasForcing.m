@@ -23,6 +23,10 @@ function [ outDir ] = getNldasForcing(qNames, qLat, qLon, qStart, qEnd, outDir)
 % http://disc.sci.gsfc.nasa.gov/hydrology/data-holdings
 % And the location of a sample file:
 % fileDir = 'ftp://hydro1.sci.gsfc.nasa.gov/data/s4pa/NLDAS/NLDAS_FORA0125_H.002/2015/001/NLDAS_FORA0125_H.A20150101.0600.002.grb';
+% The file containing elevation data is from here:
+% http://ldas.gsfc.nasa.gov/nldas/NLDASelevation.php
+% The file condtaining soil data is from here:
+% http://ldas.gsfc.nasa.gov/nldas/NLDASsoils.php
 % 
 % Initial testing revealed that processing one month took 20 minutes using
 % a CU internet connection.
@@ -130,9 +134,7 @@ end
 % Set up some variables
 % Number of sites requested
 nSites = length(qNames);
-% Initialize vectors for rounded lat and lon and lat/lon idcs
-nearestLat = nan(nSites,1);
-nearestLon = nan(nSites,1);
+% Initialize vectors for lat/lon idcs
 latIdcs = nan(nSites,1);
 lonIdcs = nan(nSites,1);
 % The years and days of years of the query
@@ -212,24 +214,59 @@ if exist(outDir, 'dir') ~= 7
 end
 
 % -------------------------------------------------------------------------
-% Set up ftp connection and download the first file to get its lat/lon data
-% The Nasa host that holds nldas forcings
-nasaHost = 'hydro1.sci.gsfc.nasa.gov';
-% Create an ftp object (open the connection)
-ftpObj = ftp(nasaHost);
-% The file name of the first date requested
-qFileName = [ftpBaseDir qYearStr(1,:) '/' qDoyStr(1,:) '/' ftpBaseFn qYearStr(1,:) qMonthStr(1,:) qDayStr(1,:) '.' qHourStr(1,:) ftpEndFn];
-% Get that first file
-disp(['Getting ' qFileName '...'])
-localFileName = mget(ftpObj,qFileName);
-% Create ncdataset object
-geo = ncdataset(localFileName{1});   
-% Extract lat and lon from the grib file
-lat = geo.data(latStr);
-lon = geo.data(lonStr);
+% Obtain soil texture data
+% Name of the file holding dominant layer 1 soil textures
+soilFileName = './STEX_TAB.01.txt';
+% Descriptions of each texture number
+soilTxtDescription = {'sand', 'loamy sand', 'sandy loam', 'silt loam', ...
+    'silt', 'loam', 'sandy clay loam', 'silty clay loam', 'clay loam', ...
+    'sandy clay', 'silty clay', 'clay', 'organic materials', 'water', ...
+    'bedrock', 'other'};
+% Read soil texture file
+soilDf = load(soilFileName);
+% Assign lats and lons to a vector each
+allSoilLat = soilDf(:,4);
+allSoilLon = soilDf(:,3);
+% Assign unique lats and lons to a vector each
+soilLat = unique(allSoilLat);
+soilLon = unique(allSoilLon);
+% Predominant soil textures
+[~, allSoil] = max(soilDf(:,5:20), [], 2);
+% Remove soili data frame from memory
+clear soilDf
+% Initialize a vector for soil texture at each site
+soilTxt = nan(nSites,1);
+% Loop through each site to get the predom soil texture (indices of soil
+% texture are different from indices from elevation and forcing data, so I
+% have to do this separately)
+for ss = 1:nSites
+    % lat/lon idcs of the site
+    [~, soilLatIdx] = min(abs(soilLat-qLat(ss)));
+    [~, soilLonIdx] = min(abs(soilLon-qLon(ss)));
+    % The NLDAS lat/lon of this site
+    nearestSoilLat = soilLat(soilLatIdx);
+    nearestSoilLon = soilLon(soilLonIdx);
+    % The overall index of this lat/lon
+    soilTxtIdx = find(all([allSoilLat==nearestSoilLat, allSoilLon==nearestSoilLon],2));
+    % The dominant soil type of this site
+    soilTxt(ss) = allSoil(soilTxtIdx);
+end % ss loop through each site
+
+% -------------------------------------------------------------------------
+% Obtain elevation data
+% Name of the file holding NLDAS mean elevation of the
+% topography from the GTOP30 dataset.
+elevFileName = './gtopomean15k.asc';
+% Read elevation file
+elevDf = load(elevFileName);
+% Assign unique lats and lons to a vector each
+lat = unique(elevDf(:,3));
+lon = unique(elevDf(:,4));
 % Size of these vectors
 nLat = length(lat);
 nLon = length(lon);
+% Assign mean elevation to a vector
+allElev = elevDf(:,5);
 
 % -------------------------------------------------------------------------
 % Set up output files. Write headers with lat/lon data in them. Get lat/lon
@@ -238,13 +275,18 @@ nLon = length(lon);
 fid = nan(1,nSites);
 % Loop through each site
 for ss = 1:nSites
+    disp(qNames{ss})
     % Get lat/lon idcs
     [latDiff latIdcs(ss)] = min(abs(lat-qLat(ss)));
     [lonDiff lonIdcs(ss)] = min(abs(lon-qLon(ss)));
+    disp(latIdcs(ss))
+    disp(lonIdcs(ss))
     % Get the rounded lat and lon. This is the center point of the NLDAS
     % cell.
     nearestLat = lat(latIdcs(ss));
     nearestLon = lon(lonIdcs(ss));
+    % Get the elevation
+    meanElevation = allElev((latIdcs(ss)-1)*nLon+lonIdcs(ss));
     % If the difference between the queried and actual lat or lon is too
     % big, display a warning
     if latDiff>0.125 || lonDiff>0.125
@@ -260,8 +302,16 @@ for ss = 1:nSites
         fid(ss) = fopen(outFile,'w');
         % Print header lines to the file
         fprintf(fid(ss),['%% Site: ' qNames{ss} '\n']);
-        fprintf(fid(ss),['%% Site lat/lon: ' num2str([qLat(ss) qLon(ss)]) '\n']);
-        fprintf(fid(ss),['%% Closest NLDAS pixel (1/8 degree) center: ' num2str([nearestLat nearestLon]) '\n']);
+        fprintf(fid(ss),['%% Site lat/lon:\n']);
+        fprintf(fid(ss),['%% ' num2str([qLat(ss) qLon(ss)], '%12.8f\t') '\n']);
+        fprintf(fid(ss),['%% Closest NLDAS pixel (1/8 degree) center:\n']);
+        fprintf(fid(ss),['%% ' num2str([nearestLat nearestLon], '%8.4f\t') '\n']);
+        fprintf(fid(ss),['%% Avg NLDAS pixel elevation (m):\n']);
+        fprintf(fid(ss),['%% ' num2str(meanElevation, '%9.4f') '\n']);
+        fprintf(fid(ss),['%% Dominant surface soil texture number:\n']);
+        fprintf(fid(ss),['%% ' num2str(soilTxt(ss), '%d') '\n']);
+        fprintf(fid(ss),['%% Dominant surface soil texture description:\n']);
+        fprintf(fid(ss),['%% ' soilTxtDescription{soilTxt(ss)} '\n']);
         fprintf(fid(ss),['%% File created on ' date '.\n']);
         fprintf(fid(ss),['%% Date                       ' namesStrAll '\n']);
         fprintf(fid(ss),['%% year month day hour minute ' unitsStrAll '\n']);
@@ -271,6 +321,13 @@ for ss = 1:nSites
         fid(ss) = fopen(outFile,'a');
     end
 end % Loop through each site
+
+% -------------------------------------------------------------------------
+% Set up ftp connection
+% The Nasa host that holds nldas forcings
+nasaHost = 'hydro1.sci.gsfc.nasa.gov';
+% Create an ftp object (open the connection)
+ftpObj = ftp(nasaHost);
 
 % -------------------------------------------------------------------------
 % Loop through each day in the record
