@@ -1,4 +1,7 @@
 data/
 forcingFromNasa/
 forcingFromNasa_EricsFiles/
+cutSomeLines.sh
+inFileForEric.txt
+inFile.txt
 .DS_Store

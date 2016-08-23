@@ -279,8 +279,8 @@ for ss = 1:nSites
     % Get lat/lon idcs
     [latDiff latIdcs(ss)] = min(abs(lat-qLat(ss)));
     [lonDiff lonIdcs(ss)] = min(abs(lon-qLon(ss)));
-    disp(latIdcs(ss))
-    disp(lonIdcs(ss))
+%     disp(latIdcs(ss))
+%     disp(lonIdcs(ss))
     % Get the rounded lat and lon. This is the center point of the NLDAS
     % cell.
     nearestLat = lat(latIdcs(ss));

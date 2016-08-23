@@ -1,3 +1,1 @@
-% site	lat	lon
-boulder	40	-105.265
-wichita	37	-97
+% siteAbb	pixelLat	pixelLontora	38.5	-120.81recr	43.33	-116.7wagu	31.62	-109.98txso	30.31	-98.78foco	35.34	-98.4liwa	34.99	-98.03sofo	42.57	-93.55stjo	41.43	-84.96liri	31.62	-83.46kena	51.64	-106.62carm	49.43	-98.03

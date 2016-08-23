@@ -9,7 +9,7 @@ close all
 % -------------------------------------------------------------------------
 % In this example, there are two sites with latitude and longitude in the
 % following input file:
-inFile = './inFile.txt';
+inFile = './inFile_test.txt';
 % Date range requested
 qStart = [2000,1,1];
 % qStart = 'apnd';
