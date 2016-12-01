@@ -4,4 +4,5 @@ forcingFromNasa_EricsFiles/
 cutSomeLines.sh
 inFileForEric.txt
 inFile.txt
+inFile_cvs.txt
 .DS_Store
