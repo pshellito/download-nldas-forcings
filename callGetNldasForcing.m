@@ -11,9 +11,9 @@ close all
 % following input file:
 inFile = './inFile_test.txt';
 % Date range requested
-qStart = [2000,1,1];
+qStart = [2015,1,1];
 % qStart = 'apnd';
-qEnd = [2000,1,2];
+qEnd = [2015,1,1];
 
 % -------------------------------------------------------------------------
 % Read the input data from the text file

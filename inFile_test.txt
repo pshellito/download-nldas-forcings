@@ -1,3 +1,2 @@
 % site	lat	lon
-boulder	40	-105.265
-wichita	37	-97
+carm	49.43	-98.03
