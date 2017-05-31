@@ -1,7 +1,7 @@
 % This script will call the getNldasForcing function
 % Peter Shellito
 % University of Colorado Boulder
-% 2/16/16
+% 5/31/17
 
 clear all
 close all
@@ -9,11 +9,11 @@ close all
 % -------------------------------------------------------------------------
 % In this example, there are two sites with latitude and longitude in the
 % following input file:
-inFile = './inFile_cvs.txt';
+inFile = './inFile_test.txt';
 % Date range requested
 qStart = [2015,1,1];
-qStart = 'apnd';
-qEnd = [2016,12,31];
+% qStart = 'apnd';
+qEnd = [2015,1,1];
 
 % -------------------------------------------------------------------------
 % Read the input data from the text file
@@ -33,7 +33,7 @@ qLat = data{1,2};
 % Longitude of the sites in qNames
 qLon = data{1,3};
 % Directory to hold the output text files
-outDir = './forcingFromNasa';
+outDir = './nldasForcings';
 
 % -------------------------------------------------------------------------
 % Record what time is is before the function is called

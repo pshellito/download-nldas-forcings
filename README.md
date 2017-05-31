@@ -1,7 +1,9 @@
 # download-nldas-forcings
 
 ## Overview
-The Matlab function, 'getNldasForcing.m' downloads [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) primary forcings (A) at any number of point locations and saves them as individual text files that contain the corresponding meteorological timeseries. If a requested location is not in the NLDAS domain, the script will issue a warning and download the closest NLDAS pixel to the requested location.
+The Matlab script, 'callGetNldasForcing.m' will call the function, 'getNldasForcing.m,' which downloads [NLDAS](http://ldas.gsfc.nasa.gov/nldas/) primary forcings (A) at any number of point locations and saves them as individual text files that contain the corresponding meteorological timeseries. If a requested location is not in the NLDAS domain, the script will issue a warning and download the closest NLDAS pixel to the requested location.
+
+Use 'inFile_test.txt' to select site locations to save.
 
 ## Requirements
 
@@ -17,6 +19,7 @@ Java version 7 or higher. You can verify the version of Java used by Matlab by t
 
 The version returned should start with 'Java 1.7.' If it doesn't, you can try updating the Matlab JVM: http://www.mathworks.com/support/solutions/en/data/1-1812J/
 
+You must register with Earthdata and authorize NASA GESDICS DATA ARCHIVE Data Access in Earthdata Login. You must then set up .netrc and create a cookie file. To do both these steps, follow #2 in the "Procedure" section [here](https://disc.sci.gsfc.nasa.gov/recipes/?q=recipes/How-to-Download-Data-Files-from-HTTP-Service-with-wget)
 ## Demo
 
 The script, 'callGetNldasForcing.m' will

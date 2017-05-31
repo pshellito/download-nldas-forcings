@@ -22,7 +22,7 @@ function [ outDir ] = getNldasForcing(qNames, qLat, qLon, qStart, qEnd, outDir)
 % you can find all the NLDAS data:
 % http://disc.sci.gsfc.nasa.gov/hydrology/data-holdings
 % And the location of a sample file:
-% fileDir = 'ftp://hydro1.sci.gsfc.nasa.gov/data/s4pa/NLDAS/NLDAS_FORA0125_H.002/2015/001/NLDAS_FORA0125_H.A20150101.0600.002.grb';
+% fileDir = 'https://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FORA0125_H.002/2015/001/NLDAS_FORA0125_H.A20150101.0600.002.grb';
 % The file containing elevation data is from here:
 % http://ldas.gsfc.nasa.gov/nldas/NLDASelevation.php
 % The file condtaining soil data is from here:
@@ -129,6 +129,15 @@ if dnEnd < dnStart
     error('Start date cannot be after end date')
 end
 
+% -------------------------------------------------------------------------
+% Set up some system-specific variables
+
+% % The path to wget
+% PATH = getenv('PATH');
+% setenv('PATH', [PATH ':/opt/local/bin/']);
+
+% The path to the default user work folder
+userFolder = '/Users/petershellito/Documents/MATLAB/';
 
 % -------------------------------------------------------------------------
 % Set up some variables
@@ -163,8 +172,8 @@ qDayStr = num2str(qDays', '%02d');
 qDoyStr = num2str(qDoy', '%03d');
 % Create hour strings
 qHourStr = num2str((0:100:2300)','%04d');
-% The directory where nldas forcings are held
-ftpBaseDir = '/data/s4pa/NLDAS/NLDAS_FORA0125_H.002/';
+% The (remote) directory where nldas forcings are held
+httpsBaseUrl = 'https://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FORA0125_H.002/';
 % The local directory where nldas forcings will be placed
 localBaseDir = [pwd '/data'];
 % If there is already a directory named data in the working direcotry, do not continue because
@@ -176,9 +185,12 @@ if exist(localBaseDir, 'dir') == 7
         'because the end of this function will DELETE ./data and all files within it.')
 end
 % The beginning of the file name of forcings
-ftpBaseFn = 'NLDAS_FORA0125_H.A';
+startFn = 'NLDAS_FORA0125_H.A';
 % The end of the file name of forcings
-ftpEndFn = '.002.grb';
+endFn = '.grb';
+% Authorization options
+authOpts = '--load-cookies ./.urs_cookies --save-cookies ./.urs_cookies --keep-session-cookies';
+
 % Strings of variables to read
 latStr = 'lat'; % Center of 1/8 degree pixel
 lonStr = 'lon'; % Center of 1/8 degree pixel
@@ -323,26 +335,25 @@ for ss = 1:nSites
 end % Loop through each site
 
 % -------------------------------------------------------------------------
-% Set up ftp connection
-% The Nasa host that holds nldas forcings
-nasaHost = 'hydro1.sci.gsfc.nasa.gov';
-% Create an ftp object (open the connection)
-ftpObj = ftp(nasaHost);
-
-% -------------------------------------------------------------------------
 % Loop through each day in the record
 for dd = 1:length(qDatenums)
-    % Location of this day's data on the local machine
-    localDir = [pwd ftpBaseDir qYearStr(dd,:) '/' qDoyStr(dd,:)];
+    % The directory holding the files to download
+    qDirName = [httpsBaseUrl qYearStr(dd,:) '/' qDoyStr(dd,:) '/'];
+    % Get the files
+    disp(['Gettingn files in directory ' qDirName '...'])
+    % The bash command to be called. See https://disc.sci.gsfc.nasa.gov/recipes/?q=recipes/How-to-Download-Data-Files-from-HTTP-Service-with-wget
+    % This command will download every data file in the directory
+    command = ['wget ' authOpts ...
+        ' -r -c -nH -nd -np -A ' endFn ...
+        ' "' qDirName '" ' ];
+    status = system(command);
+    
     % Loop through each hour of the day
     for hh = 1:24
-        % Create strings and such to define where the files are located on the host
-        qFileName = [ftpBaseDir qYearStr(dd,:) '/' qDoyStr(dd,:) '/' ftpBaseFn qYearStr(dd,:) qMonthStr(dd,:) qDayStr(dd,:) '.' qHourStr(hh,:) ftpEndFn];
-        % Get the file from Nasa's server
-        disp(['Getting ' qFileName '...'])
-        localFileName = mget(ftpObj,qFileName);
+        % The name that file will have on the local disk
+        qFileNameLocal = [startFn qYearStr(dd,:) qMonthStr(dd,:) qDayStr(dd,:) '.' qHourStr(hh,:) '.002' endFn];
         % Create ncgeodataset object
-        geo = ncdataset(localFileName{1});
+        geo = ncdataset(qFileNameLocal);
         % Initialize a vector to hold the timestep's data (all variables) for entire domain
         domainData = nan(nLat, nLon, nVars);
         % Loop through each variable
@@ -358,21 +369,21 @@ for dd = 1:length(qDatenums)
             % 00:00 to 23:00.
             fprintf(fid(ss), [dateFmt varFmt], [qYears(dd) qMonths(dd) qDays(dd) (hh-1) 0 siteMetData']);
         end % loop through each site
+        % Remove the file that was just read
+        delete(qFileNameLocal);
+        % Delete the .gbx9 file that was created
+        delete([qFileNameLocal '.gbx9']);
+        % Delete the .ncx file that was, for some reason, created in the
+        % user folder
+        delete([userFolder qFileNameLocal '.ncx']);
     end % Loop through each hour of the day
-    % Delete this day's directory and all data within
-    rmdir(localDir, 's')
 end % Loop through each day in the record
 % -------------------------------------------------------------------------
 % Clean up and close files
-% Delete all data stored in this session
-disp(['Cleaning up...'])
-rmdir(localBaseDir, 's')
 % Loop through each site and close the files
 for ss = 1:nSites
     outFile = qNames{ss};
     fclose(fid(ss));
 end
-% Close the ftp connection
-close(ftpObj)
 
 end

@@ -1,7 +1,7 @@
 data/
-forcingFromNasa/
-forcingFromNasa_EricsFiles/
+nldasForcings/
 cutSomeLines.sh
 otherInfiles/
-inFile.txt
+robots.txt
+.urs_cookies
 .DS_Store
